@@ -1,0 +1,103 @@
+
+import streamlit as st
+
+st.set_page_config(
+    page_title="Pet Calorie Calculator",
+    page_icon="🐾",
+    layout="centered"
+)
+
+def calculate_pet_calories(weight_kg, species, lifestyle):
+    # RER calculation
+    if 2 <= weight_kg <= 45:
+        rer = (30 * weight_kg) + 70
+        formula = "Linear approximation: 30 × weight + 70"
+    else:
+        rer = 70 * (weight_kg ** 0.75)
+        formula = "Metabolic-weight formula: 70 × weight^0.75"
+
+    multipliers = {
+        "canine": {
+            "neutered_adult": 1.6,
+            "intact_adult": 1.8,
+            "weight_loss": 1.0,
+            "inactive": 1.4
+        },
+        "feline": {
+            "neutered_adult": 1.2,
+            "intact_adult": 1.4,
+            "weight_loss": 0.8,
+            "inactive": 1.0
+        }
+    }
+
+    multiplier = multipliers[species][lifestyle]
+    mer = rer * multiplier
+
+    return round(rer, 2), round(mer, 2), multiplier, formula
+
+
+st.title("🐾 Pet Calorie Calculator")
+st.write("Estimate daily resting and maintenance energy requirements.")
+
+with st.form("calorie_form"):
+    species_label = st.selectbox(
+        "Select animal",
+        ["Dog", "Cat"]
+    )
+
+    weight = st.number_input(
+        "Body weight (kg)",
+        min_value=0.1,
+        max_value=150.0,
+        value=15.0,
+        step=0.1
+    )
+
+    lifestyle_options = {
+        "Neutered adult": "neutered_adult",
+        "Intact adult": "intact_adult",
+        "Weight loss": "weight_loss",
+        "Inactive": "inactive"
+    }
+
+    lifestyle_label = st.selectbox(
+        "Lifestyle / clinical category",
+        list(lifestyle_options.keys())
+    )
+
+    submitted = st.form_submit_button(
+        "Calculate calories",
+        use_container_width=True
+    )
+
+if submitted:
+    species = "canine" if species_label == "Dog" else "feline"
+    lifestyle = lifestyle_options[lifestyle_label]
+
+    rer, mer, multiplier, formula = calculate_pet_calories(
+        weight, species, lifestyle
+    )
+
+    st.divider()
+    st.subheader("Daily energy estimates")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric("RER", f"{rer:,.0f} kcal/day")
+
+    with col2:
+        st.metric("Estimated MER", f"{mer:,.0f} kcal/day")
+
+    st.write(f"**Species:** {species_label}")
+    st.write(f"**Weight:** {weight:.1f} kg")
+    st.write(f"**Multiplier:** ×{multiplier}")
+    st.caption(f"RER formula used: {formula}")
+
+    st.warning(
+        "These are estimates, not a prescribed feeding plan. "
+        "Actual energy needs vary with age, body condition, "
+        "activity, disease and treatment goals. Veterinary "
+        "assessment is recommended before dietary changes."
+    )
