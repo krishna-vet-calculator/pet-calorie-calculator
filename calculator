@@ -1,0 +1,33 @@
+def calculate_pet_calories(weight_kg, species="canine", lifestyle="neutered_adult"):
+    # Linear formula for dogs/cats between 2kg and 45kg
+    if 2 <= weight_kg <= 45:
+        rer = (30 * weight_kg) + 70
+    else:
+        # Exponential formula for any weight
+        rer = 70 * (weight_kg ** 0.75)
+        
+    # MER multipliers (example standard values)
+    multipliers = {
+        "canine": {
+            "neutered_adult": 1.6,
+            "intact_adult": 1.8,
+            "weight_loss": 1.0,
+            "inactive": 1.4
+        },
+        "feline": {
+            "neutered_adult": 1.2,
+            "intact_adult": 1.4,
+            "weight_loss": 0.8,
+            "inactive": 1.0
+        }
+    }
+    
+    multiplier = multipliers.get(species, {}).get(lifestyle, 1.6)
+    mer = rer * multiplier
+    
+    return round(rer, 2), round(mer, 2)
+
+# Example usage for a 15 kg neutered dog:
+rer_result, mer_result = calculate_pet_calories(15, species="canine", lifestyle="neutered_adult")
+print(f"RER: {rer_result} kcal/day")
+print(f"MER: {mer_result} kcal/day")
